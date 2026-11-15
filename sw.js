@@ -1,4 +1,4 @@
-const CACHE = "mi-candado-v5";
+const CACHE = "mi-candado-v6";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "samurai.jpg"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
