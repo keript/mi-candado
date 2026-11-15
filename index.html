@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi Candado</title>
+<meta name="theme-color" content="#f6f4ef">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root{
+    --bg:#f6f4ef; --card:#ffffff; --ink:#1f2a33; --soft:#6b7680;
+    --ok:#2e9e6a; --ok-bg:#e3f5ec; --lock:#c0563c; --lock-bg:#fbe9e4;
+    --key:#b98a12; --key-bg:#fbf1d6; --line:#e4e0d8; --accent:#3a6ea5;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:17px;line-height:1.35}
+  main{max-width:520px;margin:0 auto;padding:16px 14px 40px}
+  h1{font-size:20px;margin:4px 0 2px}
+  .fecha{color:var(--soft);font-size:15px;margin-bottom:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
+  .card h2{font-size:16px;margin:0 0 10px;color:var(--soft);font-weight:600}
+
+  /* Candado */
+  .candado{text-align:center;border-radius:16px;padding:18px 12px;margin-bottom:14px;border:2px solid transparent;transition:.25s}
+  .candado.cerrado{background:var(--lock-bg);border-color:#f0c9bd}
+  .candado.abierto{background:var(--ok-bg);border-color:#bfe6d2}
+  .candado.llave{background:var(--key-bg);border-color:#efd99a}
+  .candado .icono{font-size:64px;line-height:1}
+  .candado .estado{font-size:22px;font-weight:700;margin-top:6px}
+  .candado .detalle{color:var(--soft);font-size:15px;margin-top:4px}
+  .barra{height:10px;background:#0000000f;border-radius:6px;margin:12px auto 0;max-width:280px;overflow:hidden}
+  .barra > div{height:100%;background:var(--ok);width:0;transition:.3s}
+
+  /* Emociómetro */
+  .emos{display:flex;gap:6px;justify-content:space-between}
+  .emos button{flex:1;font-size:28px;padding:8px 0;border-radius:12px;border:2px solid var(--line);background:#fff;cursor:pointer}
+  .emos button.sel{border-color:var(--accent);background:#e8f0f9}
+  .emo-txt{text-align:center;color:var(--soft);font-size:14px;margin-top:6px;min-height:18px}
+
+  /* Tareas */
+  .tarea{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px 12px;margin-bottom:8px;
+    border-radius:14px;border:2px solid var(--line);background:#fff;font-size:17px;color:var(--ink);cursor:pointer}
+  .tarea:last-child{margin-bottom:0}
+  .tarea .ic{font-size:26px;width:34px;text-align:center}
+  .tarea .tx{flex:1}
+  .tarea .sub{display:block;color:var(--soft);font-size:14px;margin-top:2px}
+  .tarea .check{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:18px}
+  .tarea.hecha{border-color:#bfe6d2;background:var(--ok-bg)}
+  .tarea.hecha .check{background:var(--ok);border-color:var(--ok);color:#fff}
+
+  /* Llave */
+  .llave-btn{width:100%;padding:12px;border-radius:12px;border:2px dashed #e0c36a;background:#fffaf0;color:#7a5c08;font-size:16px;cursor:pointer}
+  .confirm{display:none;margin-top:10px;padding:12px;border-radius:12px;background:var(--key-bg);font-size:15px}
+  .confirm.ver{display:block}
+  .fila{display:flex;gap:8px;margin-top:10px}
+  .fila button{flex:1;padding:11px;border-radius:10px;border:0;font-size:16px;cursor:pointer}
+  .si{background:var(--key);color:#fff}.no{background:#fff;border:1px solid var(--line)!important;color:var(--ink)}
+
+  /* Historial */
+  .stats{display:flex;gap:8px;margin-bottom:10px}
+  .stat{flex:1;text-align:center;background:var(--bg);border-radius:12px;padding:8px 4px}
+  .stat b{display:block;font-size:22px}
+  .stat span{font-size:13px;color:var(--soft)}
+  .hist{list-style:none;margin:0;padding:0;font-size:15px}
+  .hist li{display:flex;justify-content:space-between;padding:7px 2px;border-bottom:1px solid var(--line)}
+  .hist li:last-child{border-bottom:0}
+  .vacio{color:var(--soft);font-size:15px}
+  .exp{width:100%;margin-top:10px;padding:11px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:15px;cursor:pointer}
+  .mb{color:var(--soft);font-size:14px}
+  .aviso{font-size:13px;color:var(--soft);text-align:center;margin-top:6px;min-height:16px}
+  textarea{width:100%;font-size:12px;margin-top:8px;display:none;height:120px}
+</style>
+</head>
+<body>
+<main>
+  <h1>🔒 Mi Candado</h1>
+  <div class="fecha" id="fecha"></div>
+
+  <section class="candado cerrado" id="candado" aria-live="polite">
+    <div class="icono" id="cIcono">🔒</div>
+    <div class="estado" id="cEstado">Cerrado</div>
+    <div class="detalle" id="cDetalle"></div>
+    <div class="barra"><div id="cBarra"></div></div>
+  </section>
+
+  <section class="card">
+    <h2>¿Cómo estás hoy?</h2>
+    <div class="emos" id="emos"></div>
+    <div class="emo-txt" id="emoTxt">Toca una cara</div>
+  </section>
+
+  <section class="card">
+    <h2>Mis 5 de hoy</h2>
+    <div id="tareas"></div>
+  </section>
+
+  <section class="card">
+    <h2>Llave de emergencia</h2>
+    <button class="llave-btn" id="llaveBtn">🔑 Abrir igualmente</button>
+    <div class="confirm" id="confirm">
+      Hoy lo necesitas, y está bien. ¿Abrimos el candado?
+      <div class="fila">
+        <button class="si" id="llaveSi">Sí, abrir</button>
+        <button class="no" id="llaveNo">Mejor no</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Mis días</h2>
+    <div class="stats">
+      <div class="stat"><b id="sRacha">0</b><span>racha</span></div>
+      <div class="stat"><b id="sAbiertos">0</b><span>días abiertos</span></div>
+      <div class="stat"><b id="sTotal">0</b><span>días apuntados</span></div>
+    </div>
+    <ul class="hist" id="hist"><li class="vacio">Aún no hay días guardados.</li></ul>
+    <button class="exp" id="expBtn">📄 Exportar para Excel</button>
+    <textarea id="csvBox" readonly></textarea>
+  </section>
+
+  <section class="card">
+    <h2>micro:bit</h2>
+    <div class="mb">🔌 Próximamente (fase 3): la app avisará al micro:bit por Bluetooth y él encenderá la tele.</div>
+  </section>
+
+  <div class="aviso" id="aviso"></div>
+</main>
+
+<script>
+(function(){
+  const TAREAS = [
+    {k:"mover",  ic:"🚴", t:"Moverme", sub:"Paseo, bici o gimnasio"},
+    {k:"est1",   ic:"📘", t:"Estudio 1", sub:"Primera sesión de OPE"},
+    {k:"est2",   ic:"📗", t:"Estudio 2", sub:"Segunda sesión de OPE"},
+    {k:"hablar", ic:"💬", t:"Hablar con alguien", sub:"Una persona, en persona o por teléfono"},
+    {k:"casa",   ic:"🏠", t:"Casa", sub:""}
+  ];
+  // 0 = domingo
+  const CASA = [
+    "Aspirar + batch cooking y sábanas a 60 °C",
+    "Aspirar + cocina, basura y nevera",
+    "Aspirar + baño",
+    "Aspirar + polvo",
+    "Aspirar + ropa",
+    "Aspirar + polvo, salón y rodillo",
+    "Aspirar + baño y lista del batch cooking"
+  ];
+  const EMOS = [
+    {n:1,e:"😞",t:"Muy mal"},{n:2,e:"🙁",t:"Mal"},{n:3,e:"😐",t:"Regular"},
+    {n:4,e:"🙂",t:"Bien"},{n:5,e:"😄",t:"Muy bien"}
+  ];
+
+  const $ = id => document.getElementById(id);
+  const hoyD = new Date();
+  const pad = n => String(n).padStart(2,"0");
+  const keyOf = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+  const HOY = keyOf(hoyD);
+  TAREAS[4].sub = "Hoy: " + CASA[hoyD.getDay()];
+
+  $("fecha").textContent = hoyD.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"});
+
+  let dia = {fecha:HOY, emo:null, tareas:{mover:false,est1:false,est2:false,hablar:false,casa:false}, llave:false};
+  let dias = {};           // fecha -> registro
+
+  // ---- reglas ----
+  function necesarias(d){ return (d.emo === 1 || d.emo === 2) ? 2 : 4; }
+  function hechas(d){ return Object.values(d.tareas||{}).filter(Boolean).length; }
+  function estado(d){
+    if (hechas(d) >= necesarias(d)) return "abierto";
+    if (d.llave) return "llave";
+    return "cerrado";
+  }
+
+  // ---- almacenamiento local (respaldo) ----
+  function lsGet(){ try{ return JSON.parse(localStorage.getItem("candado-dias")||"{}"); }catch(e){ return {}; } }
+  function lsSet(){ try{ localStorage.setItem("candado-dias", JSON.stringify(dias)); }catch(e){} }
+
+  function guardar(){
+    dia.candado = estado(dia);
+    dia.hechas = hechas(dia);
+    dias[HOY] = JSON.parse(JSON.stringify(dia));
+    lsSet();
+    pintar();
+  }
+  function aviso(t){ $("aviso").textContent = t; }
+
+  // ---- pintar ----
+  function pintar(){
+    // emociómetro
+    const emos = $("emos"); emos.innerHTML = "";
+    EMOS.forEach(o=>{
+      const b = document.createElement("button");
+      b.textContent = o.e; b.title = o.t; b.setAttribute("aria-label", o.n+" "+o.t);
+      if (dia.emo === o.n) b.className = "sel";
+      b.onclick = ()=>{ dia.emo = (dia.emo===o.n? null : o.n); guardar(); };
+      emos.appendChild(b);
+    });
+    const eSel = EMOS.find(o=>o.n===dia.emo);
+    $("emoTxt").textContent = eSel ? (eSel.n+" · "+eSel.t + (eSel.n<=2 ? " — hoy con 2 basta 💛" : "")) : "Toca una cara";
+
+    // tareas
+    const tw = $("tareas"); tw.innerHTML = "";
+    TAREAS.forEach(o=>{
+      const b = document.createElement("button");
+      const ok = !!dia.tareas[o.k];
+      b.className = "tarea" + (ok ? " hecha" : "");
+      b.innerHTML = '<span class="ic"></span><span class="tx"><span class="tt"></span><span class="sub"></span></span><span class="check"></span>';
+      b.querySelector(".ic").textContent = o.ic;
+      b.querySelector(".tt").textContent = o.t;
+      b.querySelector(".sub").textContent = o.sub;
+      b.querySelector(".check").textContent = ok ? "✓" : "";
+      b.onclick = ()=>{ dia.tareas[o.k] = !dia.tareas[o.k]; guardar(); };
+      tw.appendChild(b);
+    });
+
+    // candado
+    const st = estado(dia), h = hechas(dia), n = necesarias(dia);
+    const c = $("candado"); c.className = "candado " + st;
+    $("cIcono").textContent = st==="cerrado" ? "🔒" : (st==="llave" ? "🔑" : "🔓");
+    $("cEstado").textContent = st==="cerrado" ? "Cerrado" : (st==="llave" ? "Abierto con llave" : "¡Abierto!");
+    $("cDetalle").textContent = st==="abierto" ? (h+" de 5 · ¡día conseguido!")
+      : (st==="llave" ? "Hoy tocaba cuidarse. Mañana, otro día." : (h+" de 5 · te faltan "+(n-h)));
+    $("cBarra").style.width = Math.min(100, h/n*100) + "%";
+    $("llaveBtn").style.display = st==="cerrado" ? "" : "none";
+    if (st!=="cerrado") $("confirm").classList.remove("ver");
+
+    pintarHist();
+  }
+
+  function pintarHist(){
+    const keys = Object.keys(dias).sort().reverse();
+    const ul = $("hist"); ul.innerHTML = "";
+    if (!keys.length){ ul.innerHTML = '<li class="vacio">Aún no hay días guardados.</li>'; }
+    keys.slice(0,14).forEach(k=>{
+      const d = dias[k], st = estado(d);
+      const li = document.createElement("li");
+      const f = new Date(k+"T12:00:00").toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"short"});
+      const e = EMOS.find(o=>o.n===d.emo);
+      li.innerHTML = "<span></span><span></span>";
+      li.children[0].textContent = f + (e ? " "+e.e : "");
+      li.children[1].textContent = hechas(d)+"/5 " + (st==="abierto"?"🔓":(st==="llave"?"🔑":"🔒"));
+      ul.appendChild(li);
+    });
+    // stats
+    const abiertos = keys.filter(k=>estado(dias[k])!=="cerrado").length;
+    let racha = 0;
+    const d0 = new Date(hoyD);
+    // si hoy aún está cerrado, la racha cuenta desde ayer
+    if (!dias[HOY] || estado(dias[HOY])==="cerrado") d0.setDate(d0.getDate()-1);
+    for (;;){
+      const r = dias[keyOf(d0)];
+      if (r && estado(r)!=="cerrado"){ racha++; d0.setDate(d0.getDate()-1); } else break;
+    }
+    $("sRacha").textContent = racha;
+    $("sAbiertos").textContent = abiertos;
+    $("sTotal").textContent = keys.length;
+  }
+
+  // ---- exportar ----
+  function csv(){
+    const head = ["Fecha","Emociómetro","Candado","Moverme","Estudio 1","Estudio 2","Hablar con alguien","Casa"];
+    const rows = Object.keys(dias).sort().map(k=>{
+      const d = dias[k], t = d.tareas||{}, s = estado(d);
+      const yn = v => v ? "Sí" : "No";
+      return [k, d.emo||"", s==="abierto"?"Abierto":(s==="llave"?"Llave":"Cerrado"),
+        yn(t.mover),yn(t.est1),yn(t.est2),yn(t.hablar),yn(t.casa)].join(";");
+    });
+    return [head.join(";")].concat(rows).join("\n");
+  }
+  $("expBtn").onclick = async ()=>{
+    try{
+      const blob = new Blob(["\ufeff" + csv()], {type:"text/csv;charset=utf-8"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = "mi-candado.csv";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+      aviso("Descargado: mi-candado.csv");
+    }catch(e){
+      const box = $("csvBox"); box.style.display = "block"; box.value = csv();
+      try{ await navigator.clipboard.writeText(csv()); aviso("Copiado. Pégalo en tu Excel."); }
+      catch(e2){ aviso("Mantén pulsado el texto para copiarlo."); }
+    }
+  };
+
+  // ---- llave ----
+  $("llaveBtn").onclick = ()=> $("confirm").classList.add("ver");
+  $("llaveNo").onclick = ()=> $("confirm").classList.remove("ver");
+  $("llaveSi").onclick = ()=>{ dia.llave = true; guardar(); };
+
+  // ---- arranque ----
+  dias = lsGet();
+  if (dias[HOY]) dia = Object.assign(dia, JSON.parse(JSON.stringify(dias[HOY])));
+  pintar();
+
+  if ("serviceWorker" in navigator){
+    window.addEventListener("load", ()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+  }
+})();
+</script>
+</body>
+</html>
