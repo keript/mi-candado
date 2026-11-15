@@ -24,7 +24,12 @@
   .card h2{font-size:16px;margin:0 0 10px;color:var(--soft);font-weight:600}
 
   /* Candado */
-  .candado{text-align:center;border-radius:16px;padding:18px 12px;margin-bottom:14px;border:2px solid transparent;transition:.25s}
+  .candado{text-align:center;border-radius:16px;padding:0 0 16px;margin-bottom:14px;border:2px solid transparent;transition:.25s;overflow:hidden}
+  .candado .foto{display:block;width:100%;aspect-ratio:1/1;max-height:340px;object-fit:cover;object-position:center 40%;transition:filter .6s}
+  .candado.cerrado .foto{filter:grayscale(1) brightness(.55) contrast(1.1)}
+  .candado.llave .foto{filter:grayscale(.35) brightness(.9)}
+  .candado.abierto .foto{filter:saturate(1.15) brightness(1.05)}
+  .candado .estado,.candado .detalle{padding:0 12px}
   .candado.cerrado{background:var(--lock-bg);border-color:#f0c9bd}
   .candado.abierto{background:var(--ok-bg);border-color:#bfe6d2}
   .candado.llave{background:var(--key-bg);border-color:#efd99a}
@@ -85,11 +90,11 @@
 </head>
 <body>
 <main>
-  <h1>🔒 Mi Candado</h1>
+  <h1>⚔️ Mi Candado</h1>
   <div class="fecha" id="fecha"></div>
 
   <section class="candado cerrado" id="candado" aria-live="polite">
-    <div class="icono" id="cIcono">🔒</div>
+    <img class="foto" src="samurai.jpg" alt="Samurái desenvainando frente al sol">
     <div class="estado" id="cEstado">Cerrado</div>
     <div class="detalle" id="cDetalle"></div>
     <div class="barra"><div id="cBarra"></div></div>
@@ -261,8 +266,7 @@
     // candado
     const st = estado(dia), h = hechas(dia), n = necesarias(dia);
     const c = $("candado"); c.className = "candado " + st;
-    $("cIcono").textContent = st==="cerrado" ? "🔒" : (st==="llave" ? "🔑" : "🔓");
-    $("cEstado").textContent = st==="cerrado" ? "Cerrado" : (st==="llave" ? "Abierto con llave" : "¡Abierto!");
+    $("cEstado").textContent = st==="cerrado" ? "🔒 Cerrado" : (st==="llave" ? "🔑 Abierto con llave" : "⚔️ ¡Abierto!");
     $("cDetalle").textContent = st==="abierto" ? (h+" de 5 · ¡día conseguido!")
       : (st==="llave" ? "Hoy tocaba cuidarse. Mañana, otro día."
         : (h >= n ? (h+" de 5 · solo falta un rato de estudio 📘")
