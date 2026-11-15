@@ -166,10 +166,11 @@
   let dias = {};           // fecha -> registro
 
   // ---- reglas ----
-  function necesarias(d){ return (d.emo === 1 || d.emo === 2) ? 2 : 4; }
+  function necesarias(d){ return (d.emo === 1 || d.emo === 2) ? 2 : 3; }
+  function estudio(d){ const t = d.tareas||{}; return !!(t.est1 || t.est2); }
   function hechas(d){ return Object.values(d.tareas||{}).filter(Boolean).length; }
   function estado(d){
-    if (hechas(d) >= necesarias(d)) return "abierto";
+    if (hechas(d) >= necesarias(d) && estudio(d)) return "abierto";
     if (d.llave) return "llave";
     return "cerrado";
   }
@@ -199,7 +200,7 @@
       emos.appendChild(b);
     });
     const eSel = EMOS.find(o=>o.n===dia.emo);
-    $("emoTxt").textContent = eSel ? (eSel.n+" · "+eSel.t + (eSel.n<=2 ? " — hoy con 2 basta 💛" : "")) : "Toca una cara";
+    $("emoTxt").textContent = eSel ? (eSel.n+" · "+eSel.t + (eSel.n<=2 ? " — hoy con 2 basta (una de estudio) 💛" : "")) : "Toca una cara";
 
     // tareas
     const tw = $("tareas"); tw.innerHTML = "";
@@ -222,7 +223,9 @@
     $("cIcono").textContent = st==="cerrado" ? "🔒" : (st==="llave" ? "🔑" : "🔓");
     $("cEstado").textContent = st==="cerrado" ? "Cerrado" : (st==="llave" ? "Abierto con llave" : "¡Abierto!");
     $("cDetalle").textContent = st==="abierto" ? (h+" de 5 · ¡día conseguido!")
-      : (st==="llave" ? "Hoy tocaba cuidarse. Mañana, otro día." : (h+" de 5 · te faltan "+(n-h)));
+      : (st==="llave" ? "Hoy tocaba cuidarse. Mañana, otro día."
+        : (h >= n ? (h+" de 5 · solo falta un rato de estudio 📘")
+          : (h+" de 5 · te faltan "+(n-h)+(estudio(dia) ? "" : " (una de estudio)"))));
     $("cBarra").style.width = Math.min(100, h/n*100) + "%";
     $("llaveBtn").style.display = st==="cerrado" ? "" : "none";
     if (st!=="cerrado") $("confirm").classList.remove("ver");
